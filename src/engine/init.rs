@@ -5,13 +5,19 @@ use std::io::ErrorKind::AlreadyExists;
 use std::io::Write;
 
 pub fn init() -> std::io::Result<()> {
-    create_migrations_dir()?;
-    create_config_file()?;
+    let cur_dir = env::current_dir()?;
+    init_at(&cur_dir)?;
     Ok(())
 }
 
-fn create_migrations_dir() -> std::io::Result<()> {
-    let mut path = env::current_dir()?;
+pub fn init_at(base_dir: &std::path::Path) -> std::io::Result<()> {
+    create_migrations_dir(&base_dir)?;
+    create_config_file(&base_dir)?;
+    Ok(())
+}
+
+fn create_migrations_dir(base_dir: &std::path::Path) -> std::io::Result<()> {
+    let mut path = base_dir.to_path_buf();
     path.push("migrations");
 
     match fs::create_dir(&path) {
@@ -21,17 +27,12 @@ fn create_migrations_dir() -> std::io::Result<()> {
     }
 }
 
-fn create_config_file() -> std::io::Result<()> {
-    let file = OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .open("rustway.toml");
+fn create_config_file(base_dir: &std::path::Path) -> std::io::Result<()> {
+    let mut path = base_dir.to_path_buf();
+    path.push("rustway.toml");
 
-    match file {
-        Ok(mut file) => {
-            file.write_all(b"[migrations]\ndirectory = \"migrations\"\n")?;
-            return Ok(());
-        }
-        Err(e) => Err(e),
-    }
+    let file = OpenOptions::new().write(true).create_new(true).open(path);
+    let mut file = file?;
+    file.write_all(b"[migrations]\ndirectory = \"migrations\"\n")?;
+    Ok(())
 }
