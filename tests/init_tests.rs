@@ -1,4 +1,5 @@
 use rustway::engine::init::init_at;
+use std::fs::create_dir;
 use tempfile::tempdir;
 
 #[test]
@@ -8,4 +9,11 @@ fn deve_criar_pasta_migrations_e_config() {
 
     assert!(tmp_dir.path().join("migrations").is_dir());
     assert!(tmp_dir.path().join("rustway.toml").is_file());
+}
+
+#[test]
+fn deve_aceitar_pasta_migrations_existente() {
+    let tmp_dir = tempdir().unwrap();
+    create_dir(tmp_dir.path().join("migrations")).unwrap();
+    assert!(init_at(tmp_dir.path()).is_ok())
 }
