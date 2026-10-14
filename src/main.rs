@@ -1,19 +1,20 @@
-mod cli;
-use cli::CliError;
-use std::env;
-fn main() {
-    // The first element is traditionally the path of the executable,
-    // but it can be set to arbitrary text, and might not even exist.
-    //  This means this property should not be relied upon for security purposes.
-    let arg = env::args().skip(1).next();
+mod args;
+use args::{Cli, Commands};
+use clap::Parser;
+use std::process::ExitCode;
+mod engine;
+use engine::init::init;
 
-    match arg {
-        Some(a) => match cli::get_command(&a) {
-            Ok(a) => cli::run(a),
-            Err(CliError::ComandoNaoReconhecido) => {
-                println!("Comando desconhecido");
-            }
-        },
-        None => println!("help"),
+fn main() -> ExitCode {
+    let cli = Cli::parse();
+
+    match &cli.command {
+        Commands::Info => println!("Info"),
+        Commands::Init => init().unwrap(),
+        Commands::Migrate => print!("Migrate"),
+        Commands::Repair => print!("Repair"),
+        Commands::Validate => print!("Validate"),
     }
+
+    ExitCode::SUCCESS
 }
