@@ -2,6 +2,7 @@ use clap::Parser;
 use rustway::args::{Cli, Commands};
 use rustway::engine::info::info;
 use rustway::engine::init::init;
+use rustway::engine::validate::validate;
 use std::process::ExitCode;
 
 fn main() -> ExitCode {
@@ -36,9 +37,12 @@ fn main() -> ExitCode {
             println!("Repair");
             ExitCode::SUCCESS
         }
-        Commands::Validate => {
-            println!("Validate");
-            ExitCode::SUCCESS
-        }
+        Commands::Validate => match validate() {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(e) => {
+                eprintln!("{e}");
+                ExitCode::FAILURE
+            }
+        },
     }
 }
